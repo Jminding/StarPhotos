@@ -406,15 +406,15 @@
                         `;
                         document.body.appendChild(modal);
                         // Make it so that when the button is clicked the modal pops up
-                        ((i, j) => {
+                        ((starName) => {
                             button.addEventListener('click', async () => {
                                 // Fetch the SIMBAD data
-                                const simbadData = await fetchSimbadData(star_list[i + j]);
+                                const simbadData = await fetchSimbadData(starName);
                                 // Parse the SIMBAD data
                                 const formattedData = parseSimbadData(simbadData);
 
                                 // Find the specific modal related to the clicked button
-                                const modalId = 'exampleModal' + star_list[i + j].replace(/[\s']/g, "");
+                                const modalId = 'exampleModal' + starName.replace(/[\s']/g, "");
                                 const modalElement = document.getElementById(modalId);
                                 const modalBodyElement = modalElement.querySelector('.modal-body');
                                 
@@ -425,7 +425,7 @@
                                 let getModal = new bootstrap.Modal(modalElement);
                                 getModal.show();
                             });
-                        })(i, j);
+                        })(star_list[i + j]);
                         col.classList.add('col');
                         let img = document.createElement('img');
                         img.src = star_list[i + j] + '.jpg';
