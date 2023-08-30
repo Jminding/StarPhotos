@@ -251,10 +251,10 @@
     //             images.appendChild(row);
     //         }
             // For computer or mobile
-            for (let i = 0; i < star_list.length; i += (window.mobileCheck() ? 1 : 3)) {
+            for (var i = 0; i < star_list.length; i += (window.mobileCheck() ? 1 : 3)) {
                 let row = document.createElement('div');
                 row.classList.add('row');
-                for (let j = 0; j < (window.mobileCheck() ? 1 : 3); j++) {
+                for (var j = 0; j < (window.mobileCheck() ? 1 : 3); j++) {
                     if (i + j < star_list.length) {
                         let col = document.createElement('div');
                         let button = document.createElement('button');
