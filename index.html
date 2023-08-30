@@ -12,6 +12,12 @@
     <div style="padding-left: 30px; padding-right: 30px;">
         <h1 class="text-center" style="padding-top: 20px;">Images of the Stars in the List of IAU-approved Star Names</h1>
         <h3 class="text-center" style="padding-bottom: 20px;">Images shown were retrieved from SIMBAD/DSS2. Some of the names of the stars have been replaced with names that could be found in the SIMBAD/DSS database. As of January 2021, these are the 451 stars in the list.</h3>
+        <div class="text-center" style="padding-bottom: 30px;">
+            <a href="./StarPhotos.zip" target="_blank" rel="noreferer noopener"><button type="button" class="btn btn-lg btn-primary"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-download" viewBox="0 0 16 16">
+                <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z"/>
+                <path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3z"/>
+            </svg> Download All Images</button></a>
+        </div>
     </div>
     <div class="container" id="images">
         <p>Images loading!</p>
@@ -88,6 +94,8 @@
                         // Initialize variables to store extracted data
                         let galCoords = "Data not found";
                         let icrsCoords = "Data not found";
+                        let ra = "Data not found";
+                        let dec = "Data not found";
                         let raDec = "Data not found";
                         let parallaxDistance = "Data not found";
                         let parallaxError = "";
@@ -99,42 +107,35 @@
                         if (galCoordsMatch) {
                             const l = parseFloat(galCoordsMatch[1]);
                             const b = parseFloat(galCoordsMatch[3]);
-
-                            // Convert Galactic coordinates to Equatorial coordinates (RA and Dec)
-                            const lRad = l * (Math.PI / 180);
-                            const bRad = b * (Math.PI / 180);
-                            const sinDec = Math.sin(bRad) * Math.sin(27.4 * (Math.PI / 180)) + Math.cos(bRad) * Math.cos(27.4 * (Math.PI / 180)) * Math.cos(lRad);
-                            const decRad = Math.asin(sinDec);
-                            const cosDec = Math.cos(decRad);
-                            const cosHA = (Math.sin(bRad) - Math.sin(decRad) * Math.sin(27.4 * (Math.PI / 180))) / (Math.cos(decRad) * Math.cos(27.4 * (Math.PI / 180)));
-                            const haRad = Math.acos(cosHA);
-                            const decDeg = decRad * (180 / Math.PI);
-                            const haDeg = haRad * (180 / Math.PI);
-                            let raValue = 0;
-                            if (Math.sin(lRad) >= 0) {
-                                raValue = 192.25 - haDeg;
-                            } else {
-                                raValue = 192.25 + haDeg;
-                            }
-                            const raHours = Math.floor(raValue / 15);
-                            const raMinutes = Math.floor((raValue % 15) * 4);
-                            const raSeconds = ((raValue % 15) * 4 - raMinutes) * 60;
-                            const decSign = decDeg >= 0 ? "+" : "-";
-                            const decDegrees = Math.floor(Math.abs(decDeg));
-                            const decMinutes = Math.floor((Math.abs(decDeg) - decDegrees) * 60);
-                            const decSeconds = (((Math.abs(decDeg) - decDegrees) * 60) - decMinutes) * 60;
-                            icrsCoords = `RA = ${raHours}h ${raMinutes}m ${raSeconds.toFixed(2)}s, Dec = ${decSign}${decDegrees}° ${decMinutes}' ${decSeconds.toFixed(2)}"`;
-
-                            // Convert Galactic coordinates to RA and Dec
-                            const raHoursGal = Math.floor(l / 15);
-                            const raMinutesGal = Math.floor((l % 15) * 4);
-                            const raSecondsGal = ((l % 15) * 4 - raMinutesGal) * 60;
-                            const decSignGal = b >= 0 ? "+" : "-";
-                            const decDegreesGal = Math.floor(Math.abs(b));
-                            const decMinutesGal = Math.floor((Math.abs(b) - decDegreesGal) * 60);
-                            const decSecondsGal = (((Math.abs(b) - decDegreesGal) * 60) - decMinutesGal) * 60;
-                            galCoords = `l = ${l.toFixed(5)}, b = ${b.toFixed(5)}`;
+                            
+                            galCoords = `l = ${l.toFixed(5)}, b = ${b > 0 ? "+" : ""}${b.toFixed(5)}`;
+                            // icrsCoords = `RA = ${ra.toFixed(5)}°, Dec = ${dec.toFixed(5)} h`;
                         }
+
+                        const raDecMatch = data.match(/Coordinates\(ICRS,ep=J2000,eq=2000\): (([+-]?(?=\.\d|\d)(?:\d+)?(?:\.?\d*))(?:[Ee]([+-]?\d+))?( ([+-]?(?=\.\d|\d)(?:\d+)?(?:\.?\d*))(?:[Ee]([+-]?\d+))?)+)  (([+-]?(?=\.\d|\d)(?:\d+)?(?:\.?\d*))(?:[Ee]([+-]?\d+))?( ([+-]?(?=\.\d|\d)(?:\d+)?(?:\.?\d*))(?:[Ee]([+-]?\d+))?)+)/);
+                        console.log(raDecMatch[1]);
+                        console.log(raDecMatch[2]);
+                        console.log(raDecMatch[7]);
+                        console.log(raDecMatch);
+                        let ras = raDecMatch[1].split(" ");
+                        for (let i = 0; i < ras.length; i++) {
+                            ras[i] = parseFloat(ras[i]);
+                        }
+                        ra = `${ras[0].toFixed(0)} h ${ras[1].toFixed(0)} m ${ras[2].toFixed(3)} s`;
+                        let decs = raDecMatch[7].split(" ");
+                        for (let i = 0; i < decs.length; i++) {
+                            decs[i] = parseFloat(decs[i]);
+                        }
+                        dec = `${decs[0].toFixed(0)}° ${decs[1].toFixed(0)}' ${decs[2].toFixed(3)}"`;
+                        // if (raDecMatch) {
+                        //     const raValue = parseFloat(raDecMatch[1]);
+                        //     const raErr = parseFloat(raDecMatch[2]);
+                        //     const decValue = parseFloat(raDecMatch[9]);
+                        //     const decErr = parseFloat(raDecMatch[10]);
+                        //     ra = raValue;
+                        //     dec = decValue;
+                        //     raDec = `RA = ${raValue.toFixed(5)}° ± ${raErr.toFixed(5)}°, Dec = ${decValue.toFixed(5)}° ± ${decErr.toFixed(5)}°`;
+                        // }
 
                         const parallaxMatch = data.match(/Parallax: (\d+\.\d+) \[(\d+\.\d+)\]/);
                         if (parallaxMatch) {
@@ -181,9 +182,16 @@
                         const formattedContent = `
                             <h2>${star_list[i + j]}</h2>
                             <p><strong>Galactic Coordinates:</strong> ${galCoords}</p>
+                            <p><strong>Right Ascension:</strong> ${ra}</p>
+                            <p><strong>Declination:</strong> ${dec}</p>
                             <p><strong>Parallax Distance:</strong> ${parallaxDistance} ${parallaxError} light years</p>
                             <p><strong>Spectral Type:</strong> ${spectralType}</p>
                             <p>${spectralTypeExplanation}</p>
+                            <br>
+                            <a href="./${star_list[i + j]}.jpg" title="./${star_list[i + j]}.jpg" target="_blank" rel="noreferer noopener"><button type="button" class="btn btn-primary"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-download" viewBox="0 0 16 16">
+  <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z"/>
+  <path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3z"/>
+</svg> Download ${star_list[i + j]}.jpg</button></a>
                         `;
 
                         return formattedContent;
