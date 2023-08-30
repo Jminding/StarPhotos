@@ -406,26 +406,26 @@
                         `;
                         document.body.appendChild(modal);
                         // Make it so that when the button is clicked the modal pops up
-                        // button.setAttribute('data-bs-toggle', 'modal');
-                        // button.setAttribute('data-bs-target', '#exampleModal' + star_list[i + j].replace(" ", "").replace("'", ""));
-                        button.addEventListener('click', async () => {
-                            // Fetch the SIMBAD data
-                            const simbadData = await fetchSimbadData(star_list[i + j]);
-                            // Parse the SIMBAD data
-                            const formattedData = parseSimbadData(simbadData);
+                        ((i, j) => {
+                            button.addEventListener('click', async () => {
+                                // Fetch the SIMBAD data
+                                const simbadData = await fetchSimbadData(star_list[i + j]);
+                                // Parse the SIMBAD data
+                                const formattedData = parseSimbadData(simbadData);
 
-                            // Find the specific modal related to the clicked button
-                            const modalId = 'exampleModal' + star_list[i + j].replace(/[\s']/g, "");
-                            const modalElement = document.getElementById(modalId);
-                            const modalBodyElement = modalElement.querySelector('.modal-body');
-                            
-                            // Update modal content with the formatted SIMBAD data
-                            modalBodyElement.innerHTML = formattedData;
+                                // Find the specific modal related to the clicked button
+                                const modalId = 'exampleModal' + star_list[i + j].replace(/[\s']/g, "");
+                                const modalElement = document.getElementById(modalId);
+                                const modalBodyElement = modalElement.querySelector('.modal-body');
+                                
+                                // Update modal content with the formatted SIMBAD data
+                                modalBodyElement.innerHTML = formattedData;
 
-                            // Show the modal
-                            let getModal = new bootstrap.Modal(modalElement);
-                            getModal.show();
-                        });
+                                // Show the modal
+                                let getModal = new bootstrap.Modal(modalElement);
+                                getModal.show();
+                            });
+                        })(i, j);
                         col.classList.add('col');
                         let img = document.createElement('img');
                         img.src = star_list[i + j] + '.jpg';
