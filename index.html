@@ -406,8 +406,8 @@
                         `;
                         document.body.appendChild(modal);
                         // Make it so that when the button is clicked the modal pops up
+                        "use strict";
                         var buttonClick = function(starName) {
-                            "use strict";
                             button.addEventListener('click', async () => {
                                 // Fetch the SIMBAD data
                                 const simbadData = await fetchSimbadData(starName);
