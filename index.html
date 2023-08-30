@@ -409,6 +409,7 @@
                         var buttonClick = function(starName) {
                             button.addEventListener('click', async () => {
                                 console.log("I have been clicked.");
+                                console.log(i);
                                 // Fetch the SIMBAD data
                                 const simbadData = await fetchSimbadData(starName);
                                 // Parse the SIMBAD data
