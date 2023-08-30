@@ -406,8 +406,8 @@
                         `;
                         document.body.appendChild(modal);
                         // Make it so that when the button is clicked the modal pops up
-                        var buttonClick = function(starName) {
-                            button.addEventListener('click', async () => {
+                        var buttonClick = async function(starName) {
+                            button.addEventListener(window.mobileCheck() ? 'ontouchstart' : 'click', async () => {
                                 console.log("I have been clicked.");
                                 console.log(i);
                                 // Fetch the SIMBAD data
@@ -428,6 +428,26 @@
                                 getModal.show();
                             });
                         };
+                        // document.getElementById("div" + star_list[i + j].replace(" ", "").replace("'", "")).onclick = async () => {
+                        //     console.log("I have been clicked.");
+                        //     console.log(i);
+                        //     // Fetch the SIMBAD data
+                        //     const simbadData = await fetchSimbadData(star_list[i + j]);
+                        //     // Parse the SIMBAD data
+                        //     const formattedData = parseSimbadData(simbadData);
+
+                        //     // Find the specific modal related to the clicked button
+                        //     const modalId = 'exampleModal' + star_list[i + j].replace(/[\s']/g, "");
+                        //     const modalElement = document.getElementById(modalId);
+                        //     const modalBodyElement = modalElement.querySelector('.modal-body');
+                            
+                        //     // Update modal content with the formatted SIMBAD data
+                        //     modalBodyElement.innerHTML = formattedData;
+
+                        //     // Show the modal
+                        //     let getModal = new bootstrap.Modal(modalElement);
+                        //     getModal.show();
+                        // }
                         buttonClick(star_list[i + j]);
                         col.classList.add('col');
                         let img = document.createElement('img');
