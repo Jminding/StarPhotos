@@ -18,6 +18,9 @@
     <footer class="footer" style="padding-left: 20px; padding-bottom: 20px;">
         Website made by <a href="https://jay-ding.pages.dev">Jaymin Ding</a> in 2023.
     </footer>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js" integrity="sha384-HwwvtgBNo3bZJJLYd8oVXjrBZt8cqVSpeBNS5n7C8IVInixGAoxmnlMuBnhbgrkm" crossorigin="anonymous"></script>
     <script>
         window.mobileCheck = () => {
             let check = false;
@@ -38,6 +41,7 @@
                 let row = document.createElement('div');
                 row.classList.add('row');
                 let col = document.createElement('div');
+                col.id = 'div' + star_list[i + j].replace(" ", "").replace("'", "");
                 col.classList.add('col');
                 let img = document.createElement('img');
                 img.src = star_list[i] + '.jpg';
@@ -50,8 +54,13 @@
                 p.style.marginTop = '10px';
                 p.style.fontFamily = 'monospace';
                 p.style.fontSize = '1.5rem';
+                let dialog = document.createElement('div');
+                dialog.id = 'dialog' + star_list[i];
+                dialog.title = star_list[i];
+                dialog.innerText = 'I\'m a dialog';
                 col.appendChild(img);
                 col.appendChild(p);
+                col.appendChild(dialog);
                 row.appendChild(col);
                 images.appendChild(row);
             }
@@ -63,6 +72,166 @@
             for (let j = 0; j < 3; j++) {
                 if (i + j < star_list.length) {
                     let col = document.createElement('div');
+                    let button = document.createElement('button');
+                    button.id = 'div' + star_list[i + j].replace(" ", "").replace("'", "");
+                    button.style.backgroundColor = 'transparent';
+                    button.style.border = 'none';
+                    // Function to fetch data from the SIMBAD database based on star name
+                    async function fetchSimbadData(starName) {
+                        const response = await fetch(`http://simbad.u-strasbg.fr/simbad/sim-id?Ident=${starName}&output.format=ASCII`);
+                        const data = await response.text();
+                        return data;
+                    }
+
+                    function parseSimbadData(data) {
+                        // Initialize variables to store extracted data
+                        let galCoords = "Data not found";
+                        let icrsCoords = "Data not found";
+                        let raDec = "Data not found";
+                        let parallaxDistance = "Data not found";
+                        let parallaxError = "";
+                        let spectralType = "Data not found";
+                        let spectralTypeExplanation = "Spectral type information not available.";
+
+                        // Extracting Galactic coordinates, parallax distance, parallax error, and spectral type
+                        const galCoordsMatch = data.match(/Coordinates\(Gal,ep=J2000,eq=2000\): ([+-]?(?=\.\d|\d)(?:\d+)?(?:\.?\d*))(?:[Ee]([+-]?\d+))?  ([+-]?(?=\.\d|\d)(?:\d+)?(?:\.?\d*))(?:[Ee]([+-]?\d+))?/);
+                        if (galCoordsMatch) {
+                            const l = parseFloat(galCoordsMatch[1]);
+                            const b = parseFloat(galCoordsMatch[3]);
+
+                            // Convert Galactic coordinates to Equatorial coordinates (RA and Dec)
+                            const lRad = l * (Math.PI / 180);
+                            const bRad = b * (Math.PI / 180);
+                            const sinDec = Math.sin(bRad) * Math.sin(27.4 * (Math.PI / 180)) + Math.cos(bRad) * Math.cos(27.4 * (Math.PI / 180)) * Math.cos(lRad);
+                            const decRad = Math.asin(sinDec);
+                            const cosDec = Math.cos(decRad);
+                            const cosHA = (Math.sin(bRad) - Math.sin(decRad) * Math.sin(27.4 * (Math.PI / 180))) / (Math.cos(decRad) * Math.cos(27.4 * (Math.PI / 180)));
+                            const haRad = Math.acos(cosHA);
+                            const decDeg = decRad * (180 / Math.PI);
+                            const haDeg = haRad * (180 / Math.PI);
+                            let raValue = 0;
+                            if (Math.sin(lRad) >= 0) {
+                                raValue = 192.25 - haDeg;
+                            } else {
+                                raValue = 192.25 + haDeg;
+                            }
+                            const raHours = Math.floor(raValue / 15);
+                            const raMinutes = Math.floor((raValue % 15) * 4);
+                            const raSeconds = ((raValue % 15) * 4 - raMinutes) * 60;
+                            const decSign = decDeg >= 0 ? "+" : "-";
+                            const decDegrees = Math.floor(Math.abs(decDeg));
+                            const decMinutes = Math.floor((Math.abs(decDeg) - decDegrees) * 60);
+                            const decSeconds = (((Math.abs(decDeg) - decDegrees) * 60) - decMinutes) * 60;
+                            icrsCoords = `RA = ${raHours}h ${raMinutes}m ${raSeconds.toFixed(2)}s, Dec = ${decSign}${decDegrees}° ${decMinutes}' ${decSeconds.toFixed(2)}"`;
+
+                            // Convert Galactic coordinates to RA and Dec
+                            const raHoursGal = Math.floor(l / 15);
+                            const raMinutesGal = Math.floor((l % 15) * 4);
+                            const raSecondsGal = ((l % 15) * 4 - raMinutesGal) * 60;
+                            const decSignGal = b >= 0 ? "+" : "-";
+                            const decDegreesGal = Math.floor(Math.abs(b));
+                            const decMinutesGal = Math.floor((Math.abs(b) - decDegreesGal) * 60);
+                            const decSecondsGal = (((Math.abs(b) - decDegreesGal) * 60) - decMinutesGal) * 60;
+                            galCoords = `l = ${l.toFixed(5)}, b = ${b.toFixed(5)}`;
+                        }
+
+                        const parallaxMatch = data.match(/Parallax: (\d+\.\d+) \[(\d+\.\d+)\]/);
+                        if (parallaxMatch) {
+                            const parallaxValue = parseFloat(parallaxMatch[1]);
+                            const parallaxErr = parseFloat(parallaxMatch[2]);
+                            parallaxDistance = (1 / (0.001 * parallaxValue) * 3.2615).toFixed(3); // Conversion to light years
+                            parallaxError = `± ${((parallaxErr / 1000) * parallaxDistance).toFixed(3)}`;
+                        }
+
+                        const spectralTypeMatch = data.match(/Spectral type: ([A-Z0-9]+)/);
+                        if (spectralTypeMatch) {
+                            const spectralTypeValue = spectralTypeMatch[1];
+                            spectralType = spectralTypeValue;
+
+                            // Explanation of spectral type
+                            switch (spectralTypeValue.charAt(0)) {
+                                case "O":
+                                    spectralTypeExplanation = "O-type stars are extremely hot and blue, with high temperatures and strong ionized helium lines.";
+                                    break;
+                                case "B":
+                                    spectralTypeExplanation = "B-type stars are hot and blue, with prominent helium lines and some hydrogen lines.";
+                                    break;
+                                case "A":
+                                    spectralTypeExplanation = "A-type stars are white or bluish-white, with strong hydrogen lines and ionized metals.";
+                                    break;
+                                case "F":
+                                    spectralTypeExplanation = "F-type stars are white, with prominent hydrogen lines and ionized calcium lines.";
+                                    break;
+                                case "G":
+                                    spectralTypeExplanation = "G-type stars, like the Sun, are yellowish-white, with strong hydrogen and ionized calcium lines.";
+                                    break;
+                                case "K":
+                                    spectralTypeExplanation = "K-type stars are orange or reddish, with strong neutral metal lines and molecular bands.";
+                                    break;
+                                case "M":
+                                    spectralTypeExplanation = "M-type stars are red, with strong molecular bands and lines of neutral metals.";
+                                    break;
+                                default:
+                                    spectralTypeExplanation = "Spectral type information not available.";
+                            }
+                        }
+
+                        // Format the extracted data for display
+                        const formattedContent = `
+                            <h2>${star_list[i + j]}</h2>
+                            <p><strong>Galactic Coordinates:</strong> ${galCoords}</p>
+                            <p><strong>Parallax Distance:</strong> ${parallaxDistance} ${parallaxError} light years</p>
+                            <p><strong>Spectral Type:</strong> ${spectralType}</p>
+                            <p>${spectralTypeExplanation}</p>
+                        `;
+
+                        return formattedContent;
+                    }
+                    let modal = document.createElement('div');
+                    modal.classList.add('modal', 'fade');
+                    modal.id = 'exampleModal' + star_list[i + j].replace(" ", "").replace("'", "");
+                    modal.tabIndex = '-1';
+                    modal.setAttribute('aria-labelledby', 'exampleModalLabel');
+                    modal.setAttribute('aria-hidden', 'true');
+
+                    modal.innerHTML = `
+                        <div class="modal-dialog modal-dialog-scrollable">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title" id="exampleModalLabel">${star_list[i + j]}</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <p>Modal body text goes here.</p>
+                                </div>
+                                <div class="modal-footer">
+                                    <p>Data provided by SIMBAD/DSS2.</p>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    document.body.appendChild(modal);
+                    // Make it so that when the button is clicked the modal pops up
+                    // button.setAttribute('data-bs-toggle', 'modal');
+                    // button.setAttribute('data-bs-target', '#exampleModal' + star_list[i + j].replace(" ", "").replace("'", ""));
+                    button.addEventListener('click', async () => {
+                        // Fetch the SIMBAD data
+                        const simbadData = await fetchSimbadData(star_list[i + j]);
+                        // Parse the SIMBAD data
+                        const formattedData = parseSimbadData(simbadData);
+
+                        // Find the specific modal related to the clicked button
+                        const modalId = 'exampleModal' + star_list[i + j].replace(/[\s']/g, "");
+                        const modalElement = document.getElementById(modalId);
+                        const modalBodyElement = modalElement.querySelector('.modal-body');
+                        
+                        // Update modal content with the formatted SIMBAD data
+                        modalBodyElement.innerHTML = formattedData;
+
+                        // Show the modal
+                        let getModal = new bootstrap.Modal(modalElement);
+                        getModal.show();
+                    });
                     col.classList.add('col');
                     let img = document.createElement('img');
                     img.src = star_list[i + j] + '.jpg';
@@ -75,8 +244,9 @@
                     p.style.marginTop = '10px';
                     p.style.fontFamily = 'monospace';
                     p.style.fontSize = '1.5rem';
-                    col.appendChild(img);
-                    col.appendChild(p);
+                    col.appendChild(button);
+                    button.appendChild(img);
+                    button.appendChild(p);
                     row.appendChild(col);
                 } else if (i + j >= star_list.length) {
                     let col = document.createElement('div');
