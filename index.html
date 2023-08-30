@@ -406,7 +406,7 @@
                         `;
                         document.body.appendChild(modal);
                         // Make it so that when the button is clicked the modal pops up
-                        ((starName) => {
+                        var buttonClick = function(starName) {
                             "use strict";
                             button.addEventListener('click', async () => {
                                 // Fetch the SIMBAD data
@@ -426,7 +426,8 @@
                                 let getModal = new bootstrap.Modal(modalElement);
                                 getModal.show();
                             });
-                        })(star_list[i + j]);
+                        };
+                        buttonClick(star_list[i + j]);
                         col.classList.add('col');
                         let img = document.createElement('img');
                         img.src = star_list[i + j] + '.jpg';
